@@ -204,6 +204,10 @@ class JSONField(models.TextField):
         super(JSONField, self).contribute_to_class(cls, name)
 
         def get_json(model_instance):
+            if self.lazy:
+                state = getattr(model_instance, Creator._state_key, None)
+                if state is None or not state.get(self.attname, False):
+                    return model_instance.__dict__[self.attname]
             return self.get_db_prep_value(getattr(model_instance, self.attname, None), force=True)
         setattr(cls, 'get_%s_json' % self.name, get_json)
 
